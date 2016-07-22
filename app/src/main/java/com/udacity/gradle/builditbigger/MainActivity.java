@@ -56,42 +56,22 @@ public class MainActivity extends ActionBarActivity {
      * fetch joke from api
      */
     public void tellJoke(){
-        new jokeEndPointRequest().execute();
-    }
+        new jokeEndPointRequest(getString(R.string.api_url))
+                .setJokeListener(new jokeEndPointRequest.GetJokeTaskListener() {
+                    @Override
+                    public void onComplete(String joke) {
+                        if (joke != null) {
+                            displayJoke(joke);
+                        } else {
+                            Toast.makeText(MainActivity.this, R.string.network_error, Toast.LENGTH_LONG).show();
+                        }
+                    }
 
-    public class jokeEndPointRequest extends AsyncTask<Void,Void,String> {
-
-        JokeApi jokeApi=null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            JokeApi.Builder builder=new JokeApi.Builder(AndroidHttp.newCompatibleTransport(),new AndroidJsonFactory(),null)
-                    .setRootUrl(getString(R.string.api_url));
-            jokeApi=builder.build();
-            try {
-                return jokeApi.getJoke().execute().getJoke();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final String s) {
-            super.onPostExecute(s);
-            mProgressBar.setVisibility(View.GONE);
-            if(s!=null) {
-                displayJoke(s);
-            } else {
-                Toast.makeText(MainActivity.this, R.string.network_error,Toast.LENGTH_LONG).show();
-            }
-        }
+                    @Override
+                    public void showProgressBar(int show) {
+                        mProgressBar.setVisibility(show);
+                    }
+                }).execute();
     }
 
     public void displayJoke(String joke){
